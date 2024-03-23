@@ -29,6 +29,7 @@ typedef CharacterFile = {
 	var flip_x:Bool;
 	var no_antialiasing:Bool;
 	var healthbar_colors:Array<Int>;
+	@:optional var vocals_file:String;
 }
 
 typedef AnimArray = {
@@ -58,6 +59,7 @@ class Character extends FlxSprite
 	public var idleSuffix:String = '';
 	public var danceIdle:Bool = false; //Character use "danceLeft" and "danceRight" instead of "idle"
 	public var skipDance:Bool = false;
+	public var vocalsFile:String = '';
 
 	public var healthIcon:String = 'face';
 	public var animationsArray:Array<AnimArray> = [];
@@ -65,7 +67,7 @@ class Character extends FlxSprite
 	public var positionArray:Array<Float> = [0, 0];
 	public var cameraPosition:Array<Float> = [0, 0];
 
-	public var hasMissAnimations:Bool = false;
+	//public var hasMissAnimations:Bool = true;
 
 	//Used on Character Editor
 	public var imageFile:String = '';
@@ -147,6 +149,8 @@ class Character extends FlxSprite
 				if(json.healthbar_colors != null && json.healthbar_colors.length > 2)
 					healthColorArray = json.healthbar_colors;
 
+				vocalsFile = json.vocals_file != null ? json.vocals_file : '';
+
 				// antialiasing
 				noAntialiasing = (json.no_antialiasing == true);
 				antialiasing = ClientPrefs.data.antialiasing ? !noAntialiasing : false;
@@ -177,7 +181,7 @@ class Character extends FlxSprite
 		}
 		originalFlipX = flipX;
 
-		if(animOffsets.exists('singLEFTmiss') || animOffsets.exists('singDOWNmiss') || animOffsets.exists('singUPmiss') || animOffsets.exists('singRIGHTmiss')) hasMissAnimations = true;
+		//if(animOffsets.exists('singLEFTmiss') || animOffsets.exists('singDOWNmiss') || animOffsets.exists('singUPmiss') || animOffsets.exists('singRIGHTmiss')) hasMissAnimations = true;
 		recalculateDanceIdle();
 		dance();
 
@@ -221,7 +225,7 @@ class Character extends FlxSprite
 		{
 			if(heyTimer > 0)
 			{
-				heyTimer -= elapsed * PlayState.instance.playbackRate;
+				heyTimer -= elapsed * (PlayState.instance?.playbackRate ?? 1);
 				if(heyTimer <= 0)
 				{
 					if(specialAnim && animation.curAnim.name == 'hey' || animation.curAnim.name == 'cheer')
@@ -260,10 +264,10 @@ class Character extends FlxSprite
 
 			if (animation.curAnim.name.startsWith('sing'))
 				holdTimer += elapsed;
-			else if(isPlayer)
+			else if(PlayState.isCharacterPlayer(this))
 				holdTimer = 0;
 
-			if (!isPlayer && holdTimer >= Conductor.stepCrochet * (0.0011 / (FlxG.sound.music != null ? FlxG.sound.music.pitch : 1)) * singDuration)
+			if (!PlayState.isCharacterPlayer(this) && holdTimer >= Conductor.stepCrochet * (0.0011 / (FlxG.sound.music != null ? FlxG.sound.music.pitch : 1)) * singDuration)
 			{
 				dance();
 				holdTimer = 0;
@@ -301,7 +305,46 @@ class Character extends FlxSprite
 
 	public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void
 	{
+		if (AnimName == null)
+			return;
+
+		colorTransform.redMultiplier = 1;
+		colorTransform.greenMultiplier = 1;
+		colorTransform.blueMultiplier = 1;
+
 		specialAnim = false;
+
+		if (AnimName == "taunt") {
+			specialAnim = true;
+			heyTimer = 1;
+		}
+
+		@:privateAccess
+		if (animation._animations.get(AnimName) == null) {
+			if (AnimName.endsWith("-alt")) {
+				AnimName = AnimName.substring(0, AnimName.length - "-alt".length);
+			}
+
+			if (AnimName.endsWith("miss")) {
+				AnimName = AnimName.substring(0, AnimName.length - "miss".length);
+				colorTransform.redMultiplier = 0.5;
+				colorTransform.greenMultiplier = 0.3;
+				colorTransform.blueMultiplier = 0.5;
+			}
+
+			if (AnimName == "taunt") {
+				AnimName = "hey";
+			}
+
+			if (animation._animations.get(AnimName) == null) {
+				if (AnimName == "hey") {
+					specialAnim = false;
+					heyTimer = 0;
+				}
+				return;
+			}
+		}
+
 		animation.play(AnimName, Force, Reversed, Frame);
 
 		var daOffset = animOffsets.get(AnimName);

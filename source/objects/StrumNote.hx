@@ -12,6 +12,7 @@ class StrumNote extends FlxSprite
 	public var downScroll:Bool = false;//plan on doing scroll directions soon -bb
 	public var sustainReduce:Bool = true;
 	private var player:Int;
+	public var maxAlpha:Float = 1.;
 	
 	public var texture(default, set):String = null;
 	private function set_texture(value:String):String {
@@ -135,6 +136,8 @@ class StrumNote extends FlxSprite
 		}
 	}
 
+	var initialized:Bool = false;
+
 	public function postAddedToGroup() {
 		playAnim('static');
 		x += Note.swagWidth * noteData;
@@ -145,9 +148,13 @@ class StrumNote extends FlxSprite
 		}
 		x += ((FlxG.width / 2) * player);
 		ID = noteData;
+		initialized = true;
 	}
 
 	override function update(elapsed:Float) {
+		if (alpha > maxAlpha)
+			alpha = maxAlpha;
+		
 		if(resetAnim > 0) {
 			resetAnim -= elapsed;
 			if(resetAnim <= 0) {
@@ -166,5 +173,33 @@ class StrumNote extends FlxSprite
 			centerOrigin();
 		}
 		if(useRGBShader) rgbShader.enabled = (animation.curAnim != null && animation.curAnim.name != 'static');
+	}
+
+	override function set_visible(value:Bool):Bool {
+		if (initialized && ClientPrefs.data.disableStrumMovement) {
+			return visible;
+		}
+		return super.set_visible(value);
+	}
+
+	override function set_alpha(value:Float):Float {
+		if (initialized && ClientPrefs.data.disableStrumMovement) {
+			return super.set_alpha(FlxMath.bound(value, 0.75, 1));
+		}
+		return super.set_alpha(value);
+	}
+
+	override function set_x(value:Float):Float {
+		if (initialized && ClientPrefs.data.disableStrumMovement) {
+			return x;
+		}
+		return super.set_x(value);
+	}
+
+	override function set_y(value:Float):Float {
+		if (initialized && ClientPrefs.data.disableStrumMovement) {
+			return y;
+		}
+		return super.set_y(value);
 	}
 }

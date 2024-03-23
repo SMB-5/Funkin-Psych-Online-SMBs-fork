@@ -209,15 +209,15 @@ class Paths
 		return file;
 	}
 
-	inline static public function voices(song:String):Any
-	{
-		#if html5
-		return 'songs:assets/songs/${formatToSongPath(song)}/Voices.$SOUND_EXT';
-		#else
+	inline static public function voices(song:String, postfix:String = null):Any {
 		var songKey:String = '${formatToSongPath(song)}/Voices';
+		if (postfix != null)
+			songKey += '-' + postfix;
 		var voices = returnSound('songs', songKey);
+		@:privateAccess
+		if (voices.__buffer == null)
+			return null;
 		return voices;
-		#end
 	}
 
 	inline static public function inst(song:String):Any
@@ -230,6 +230,8 @@ class Paths
 		return inst;
 		#end
 	}
+
+	static var lastImageErrorFile:String = null;
 
 	public static var currentTrackedAssets:Map<String, FlxGraphic> = [];
 	static public function image(key:String, ?library:String = null, ?allowGPU:Bool = true):FlxGraphic
@@ -278,7 +280,11 @@ class Paths
 			return newGraphic;
 		}
 
-		trace('oh no its returning null NOOOO ($file)');
+		//STOP FUCKING USING TRACE ITS CPU HEAVY
+		if (lastImageErrorFile != file && ClientPrefs.isDebug()) {
+			Sys.println('Paths.image(): oh no its returning null NOOOO ($file)');
+			lastImageErrorFile = file;
+		}
 		return null;
 	}
 
@@ -391,10 +397,10 @@ class Paths
 		#end
 	}
 
-	inline static public function formatToSongPath(path:String) {
-		var invalidChars = ~/[~&\\;:<>#]/;
-		var hideChars = ~/[.,'"%?!]/;
+	static var invalidChars = ~/[~&\\;:<>#]/;
+	static var hideChars = ~/[.,"%?]/;
 
+	inline static public function formatToSongPath(path:String) {
 		var path = invalidChars.split(path.replace(' ', '-')).join("-");
 		return hideChars.split(path).join("").toLowerCase();
 	}

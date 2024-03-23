@@ -1,6 +1,6 @@
 package states;
 
-import online.states.Lobby;
+import online.states.OnlineState;
 import backend.WeekData;
 import backend.Achievements;
 
@@ -17,7 +17,7 @@ import options.OptionsState;
 
 class MainMenuState extends MusicBeatState
 {
-	public static var psychOnlineVersion:String = "0.2.3";
+	public static var psychOnlineVersion:String = "0.6.1";
 	public static var psychEngineVersion:String = '0.7.1h'; //This is also used for Discord RPC
 	public static var curSelected:Int = 0;
 
@@ -42,9 +42,9 @@ class MainMenuState extends MusicBeatState
 	public function new() {
 		super();
 
-		if (TitleState.offlineMode) {
-			optionShit.remove('online');
-		}
+		// if (TitleState.offlineMode) {
+		// 	optionShit.remove('online');
+		// }
 	}
 
 	override function create()
@@ -125,7 +125,7 @@ class MainMenuState extends MusicBeatState
 			menuItem.updateHitbox();
 		}
 
-		FlxG.camera.follow(camFollow, null, 0);
+		FlxG.camera.follow(camFollow, null, 0.15);
 
 		var versionShit:FlxText = new FlxText(12, FlxG.height - 64, 0, "Psych Online v" + psychOnlineVersion, 12);
 		versionShit.scrollFactor.set();
@@ -178,7 +178,7 @@ class MainMenuState extends MusicBeatState
 			FlxG.sound.music.volume += 0.5 * elapsed;
 			if(FreeplayState.vocals != null) FreeplayState.vocals.volume += 0.5 * elapsed;
 		}
-		FlxG.camera.followLerp = FlxMath.bound(elapsed * 9 / (FlxG.updateFramerate / 60), 0, 1);
+		//FlxG.camera.followLerp = FlxMath.bound(elapsed * 9 / (FlxG.updateFramerate / 60), 0, 1);
 
 		if (!selectedSomethin)
 		{
@@ -249,13 +249,14 @@ class MainMenuState extends MusicBeatState
 									case 'options':
 										LoadingState.loadAndSwitchState(new OptionsState());
 										OptionsState.onPlayState = false;
+										OptionsState.onOnlineRoom = false;
 										if (PlayState.SONG != null)
 										{
 											PlayState.SONG.arrowSkin = null;
 											PlayState.SONG.splashSkin = null;
 										}
 									case 'online':
-										MusicBeatState.switchState(new Lobby());
+										MusicBeatState.switchState(new OnlineState());
 								}
 							});
 						}

@@ -43,4 +43,22 @@ class Player extends Schema {
 
 	@:type("number")
 	public var ping:Dynamic = 0;
+
+	@:type("boolean")
+	public var isReady:Bool = false;
+
+	@:type("string")
+	public var skinMod:String = null;
+
+	@:type("string")
+	public var skinName:String = null;
+
+	@:type("string")
+	public var skinURL:String = null;
+
+	@:type("number")
+	public var points:Dynamic = 0;
+
+	@:type("string")
+	public var status:String = null;
 }

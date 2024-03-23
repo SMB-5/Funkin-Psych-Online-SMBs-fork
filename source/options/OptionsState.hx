@@ -1,5 +1,6 @@
 package options;
 
+import online.states.Room;
 import states.MainMenuState;
 import backend.StageData;
 
@@ -10,6 +11,7 @@ class OptionsState extends MusicBeatState
 	private static var curSelected:Int = 0;
 	public static var menuBG:FlxSprite;
 	public static var onPlayState:Bool = false;
+	public static var onOnlineRoom:Bool = false;
 
 	function openSelectedSubstate(label:String) {
 		switch(label) {
@@ -64,6 +66,8 @@ class OptionsState extends MusicBeatState
 		ClientPrefs.saveSettings();
 
 		super.create();
+
+		online.GameClient.send("status", "In the Game Options");
 	}
 
 	override function closeSubState() {
@@ -88,6 +92,9 @@ class OptionsState extends MusicBeatState
 				StageData.loadDirectory(PlayState.SONG);
 				LoadingState.loadAndSwitchState(new PlayState());
 				FlxG.sound.music.volume = 0;
+			}
+			else if (onOnlineRoom) {
+				LoadingState.loadAndSwitchState(new Room());
 			}
 			else MusicBeatState.switchState(new MainMenuState());
 		}

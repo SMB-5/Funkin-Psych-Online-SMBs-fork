@@ -13,12 +13,12 @@
     {
       "name": "flixel",
       "type": "haxelib",
-      "version": "5.3.1"
+      "version": "5.5.0"
     },
     {
       "name": "flixel-addons",
       "type": "haxelib",
-      "version": "3.1.1"
+      "version": "3.2.1"
     },
     {
       "name": "flixel-tools",
@@ -53,7 +53,7 @@
     {
       "name": "SScript",
       "type": "haxelib",
-      "version": "7.7.0"
+      "version": "17.0.618"
     },
     {
       "name": "discord_rpc",
@@ -73,6 +73,11 @@
       "name": "colyseus",
       "type": "haxelib",
       "version": "0.15.2"
+    },
+    {
+      "name": "HtmlParser",
+      "type": "haxelib",
+      "version": "3.4.0"
     }
   ]
 }
